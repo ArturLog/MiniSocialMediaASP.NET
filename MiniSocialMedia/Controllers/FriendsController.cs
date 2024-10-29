@@ -1,10 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MiniSocialMedia.Data;
+using MiniSocialMedia.Models;
 
 namespace MiniSocialMedia.Controllers
 {
-    public class FriendsController : Controller
+    public class FriendsController(ApplicationDbContext context) : Controller
     {
+        private readonly ApplicationDbContext _context = context;
+
         // GET: FriendsController
         public ActionResult Index()
         {
@@ -14,13 +19,7 @@ namespace MiniSocialMedia.Controllers
         // GET: FriendsController/List
         public ActionResult List()
         {
-            return View();
-        }
-
-        // GET: FriendsController/Add
-        public ActionResult Add()
-        {
-            return View();
+            return View(); //json z friendsami
         }
 
         // POST: FriendsController/Add/login
@@ -30,18 +29,15 @@ namespace MiniSocialMedia.Controllers
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                _context.Users.Add(new User(login));
+                _context.SaveChanges();
+
+                return RedirectToAction(nameof(List)); // json
             }
             catch
             {
-                return View();
+                return RedirectToAction(nameof(List));
             }
-        }
-
-        // GET: FriendsController/Del/login
-        public ActionResult Del(string login)
-        {
-            return View();
         }
 
         // POST: FriendsController/Del/login
@@ -51,7 +47,7 @@ namespace MiniSocialMedia.Controllers
         {
             try
             {
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Index)); // json
             }
             catch
             {

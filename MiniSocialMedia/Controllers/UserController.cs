@@ -7,52 +7,32 @@ using MiniSocialMedia.Models;
 
 namespace MiniSocialMedia.Controllers
 {
-    public class UserController : Controller
+    public class UserController(ApplicationDbContext context) : Controller
     {
-        private readonly ApplicationDbContext _context;
-        public UserController(ApplicationDbContext context)
-        {
-            _context = context;
-        }
-        [Route("Login/{login}")]
-        public IActionResult Login()
-        {
-            return RedirectToAction(nameof(FriendsController.List));
+        private readonly ApplicationDbContext _context = context;
 
-        }
-        public IActionResult Logout()
-        {
-            return RedirectToAction(nameof(HomeController.Index));
-        }
+        [HttpGet]
         public IActionResult List()
         {
             var allUsers = _context.Users.ToList();
             return View(allUsers);
         }
-
+        [HttpGet]
         public IActionResult Add()
         {
             return View();
         }
-
-        public IActionResult AddUser(string login)
+        [HttpPost]
+        public IActionResult AddPost(string login)
         {
-            try
+            if (!string.IsNullOrWhiteSpace(login) && _context.Users.FirstOrDefault(u=> u.Login == login) == null)
             {
-                _context.Users.Add(new User
-                {
-                    Uuid = Guid.NewGuid(),
-                    Login = login,
-                    CreatedAt = DateTime.Now
-                });
+                _context.Users.Add(new User(login));
                 _context.SaveChanges();
-
                 return RedirectToAction(nameof(List));
             }
-            catch
-            {
-                return RedirectToAction(nameof(List));
-            }
+            ModelState.AddModelError("", "Login użytkownika jest wymagany i musi być unikalny.");
+            return RedirectToAction(nameof(Add));
 
         }
 
@@ -60,20 +40,13 @@ namespace MiniSocialMedia.Controllers
         [Route("User/Del/{login}")]
         public IActionResult Del(string login)
         {
-            try
+            var userInDb = _context.Users.FirstOrDefault(u => u.Login == login);
+            if (userInDb is not null)
             {
-                var userInDb = _context.Users.FirstOrDefault(u => u.Login == login);
-                if (userInDb is not null)
-                {
-                    _context.Users.Remove(userInDb);
-                    _context.SaveChanges();
-                }
-                return RedirectToAction(nameof(List));
+                _context.Users.Remove(userInDb);
+                _context.SaveChanges();
             }
-            catch (Exception e)
-            {
-                return RedirectToAction(nameof(List));
-            }
+            return RedirectToAction(nameof(List));
         }
 
         [HttpPost]
@@ -98,12 +71,7 @@ namespace MiniSocialMedia.Controllers
         {
             for (int i = 0; i < 6; i++)
             {
-                _context.Users.Add(new User
-                {
-                    Uuid = Guid.NewGuid(),
-                    Login = RandomString(6),
-                    CreatedAt = DateTime.Now
-                });
+                _context.Users.Add(new User(RandomString(6)));
             }
             _context.SaveChanges();
             return RedirectToAction(nameof(List));
