@@ -1,0 +1,12 @@
+﻿@{
+    ViewData["Title"] = "Add user";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Add user</h1>
+    <form action="/User/AddUser" method="POST">
+        <label for="login">Login:</label><br/>
+        <input type="text" name="login"/><br/>
+        <input type="submit"/>
+    </form>
+</div>
