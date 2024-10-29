@@ -6,20 +6,23 @@ using MiniSocialMedia.Models;
 
 namespace MiniSocialMedia.Controllers
 {
-    public class FriendsController(ApplicationDbContext context) : Controller
+    public class FriendsController : Controller
     {
-        private readonly ApplicationDbContext _context = context;
-
-        // GET: FriendsController
+        [HttpGet]
         public ActionResult Index()
         {
             return View();
         }
-
-        // GET: FriendsController/List
+        [HttpGet]
         public ActionResult List()
         {
-            return View(); //json z friendsami
+            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            if (loggedInUser == null) return RedirectToAction("Login", "Auth");
+
+            var user = UserRepository.GetUserByLogin(loggedInUser);
+            if (user == null) return NotFound("Zalogowany użytkownik nie istnieje.");
+
+            return Json(user.Friends);
         }
 
         // POST: FriendsController/Add/login

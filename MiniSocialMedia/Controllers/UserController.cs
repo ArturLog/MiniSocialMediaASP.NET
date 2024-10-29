@@ -7,14 +7,12 @@ using MiniSocialMedia.Models;
 
 namespace MiniSocialMedia.Controllers
 {
-    public class UserController(ApplicationDbContext context) : Controller
+    public class UserController : Controller
     {
-        private readonly ApplicationDbContext _context = context;
-
         [HttpGet]
         public IActionResult List()
         {
-            var allUsers = _context.Users.ToList();
+            var allUsers = UserRepository.Users.ToList();
             return View(allUsers);
         }
         [HttpGet]
@@ -25,27 +23,16 @@ namespace MiniSocialMedia.Controllers
         [HttpPost]
         public IActionResult AddPost(string login)
         {
-            if (!string.IsNullOrWhiteSpace(login) && _context.Users.FirstOrDefault(u=> u.Login == login) == null)
-            {
-                _context.Users.Add(new User(login));
-                _context.SaveChanges();
-                return RedirectToAction(nameof(List));
-            }
+            if (UserRepository.AddUser(login)) return RedirectToAction(nameof(Add));
             ModelState.AddModelError("", "Login użytkownika jest wymagany i musi być unikalny.");
             return RedirectToAction(nameof(Add));
-
         }
 
         [HttpGet]
         [Route("User/Del/{login}")]
         public IActionResult Del(string login)
         {
-            var userInDb = _context.Users.FirstOrDefault(u => u.Login == login);
-            if (userInDb is not null)
-            {
-                _context.Users.Remove(userInDb);
-                _context.SaveChanges();
-            }
+            if(UserRepository.RemoveUser(login)) return RedirectToAction(nameof(List));
             return RedirectToAction(nameof(List));
         }
 
