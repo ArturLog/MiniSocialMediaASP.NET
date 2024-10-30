@@ -24,13 +24,18 @@
                 <td>@user.Login</td>
                 <td>@user.CreatedAt</td>
                 <td>
-                        <form asp-action="DelPost" asp-controller="User" method="post">
+                    <form asp-action="DelPost" asp-controller="User" method="post">
                         <input type="hidden" name="login" value="@user.Login" />
                         <button type="submit" class="btn btn-danger">Delete</button>
                     </form>
                 </td>
             </tr>
         }
+        <tr>
+            <td colspan="4">
+                <a asp-action="Add" asp-controller="User" class="btn btn-primary">Add user</a>
+            </td>
+        </tr>
         </tbody>
     </table>
 </div>

@@ -2,6 +2,31 @@
     ViewData["Title"] = "Friends";
 }
 
+@model MiniSocialMedia.Models.User
+
 <div class="text-center">
     <h1 class="display-4">Friends</h1>
+    <ul>
+        @foreach (var friend in Model.Friends)
+        {
+            <li>
+                @friend
+                <a asp-action="Del" asp-route-login="@friend">Usuń</a>
+            </li>
+        }
+    </ul>
+
+    <h3>Dodaj Znajomego</h3>
+    <form method="get" asp-action="Add">
+        <input type="text" name="login" required placeholder="Login znajomego" />
+        <button type="submit">Dodaj</button>
+    </form>
+
+    <h3>Import / Eksport Znajomych</h3>
+    <form method="post" asp-action="Import" enctype="multipart/form-data">
+        <input type="file" name="file" required />
+        <button type="submit">Importuj</button>
+    </form>
+
+    <a asp-action="Export">Eksportuj znajomych do pliku</a>
 </div>

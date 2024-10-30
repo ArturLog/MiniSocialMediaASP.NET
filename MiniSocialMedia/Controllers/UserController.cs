@@ -23,7 +23,7 @@ namespace MiniSocialMedia.Controllers
         [HttpPost]
         public IActionResult AddPost(string login)
         {
-            if (UserRepository.AddUser(login)) return RedirectToAction(nameof(Add));
+            if (UserRepository.AddUser(login)) return RedirectToAction(nameof(List));
             ModelState.AddModelError("", "Login użytkownika jest wymagany i musi być unikalny.");
             return RedirectToAction(nameof(Add));
         }
@@ -39,37 +39,14 @@ namespace MiniSocialMedia.Controllers
         [HttpPost]
         public IActionResult DelPost(string login)
         {
-            try
-            {
-                var userInDb = _context.Users.FirstOrDefault(u => u.Login == login);
-                if (userInDb is not null)
-                {
-                    _context.Users.Remove(userInDb);
-                    _context.SaveChanges();
-                }
-                return RedirectToAction(nameof(List));
-            }
-            catch (Exception e)
-            {
-                return RedirectToAction(nameof(List));
-            }
+            if(UserRepository.RemoveUser(login)) return RedirectToAction(nameof(List));
+            return RedirectToAction(nameof(List));
         }
         public IActionResult Init()
         {
-            for (int i = 0; i < 6; i++)
-            {
-                _context.Users.Add(new User(RandomString(6)));
-            }
-            _context.SaveChanges();
+            UserRepository.InitializeSampleData();
             return RedirectToAction(nameof(List));
         }
-        [NonAction]
-        public static string RandomString(int length)
-        {
-            Random random = new Random();
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-            return new string(Enumerable.Repeat(chars, length)
-                .Select(s => s[random.Next(s.Length)]).ToArray());
-        }
+
     }
 }

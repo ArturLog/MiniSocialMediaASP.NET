@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using MiniSocialMedia.Models;
 
 namespace MiniSocialMedia.Controllers
 {
@@ -8,11 +9,16 @@ namespace MiniSocialMedia.Controllers
         [Route("Login/{login}")]
         public IActionResult Login(string login)
         {
+            if (login == "admin")
+            {
+                HttpContext.Session.SetString("LoggedInUser", login);
+                return RedirectToAction("List", "User");
+            }
             var user = UserRepository.GetUserByLogin(login);
             if (user != null)
             {
                 HttpContext.Session.SetString("LoggedInUser", login);
-                return RedirectToAction("List", "Friends");
+                return RedirectToAction("Index", "Friends");
             }
             return NotFound("Użytkownik nie istnieje.");
         }

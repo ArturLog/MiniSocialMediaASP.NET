@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiniSocialMedia.Data;
 using MiniSocialMedia.Models;
+using System.Linq;
+using System.Text.Json;
 
 namespace MiniSocialMedia.Controllers
 {
@@ -11,13 +13,19 @@ namespace MiniSocialMedia.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            return View();
+            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            if (loggedInUser == null) return NotFound("Uzytkownik niezalogowany");
+
+            var user = UserRepository.GetUserByLogin(loggedInUser);
+            if (user == null) return NotFound("Zalogowany użytkownik nie istnieje.");
+
+            return View(user);
         }
         [HttpGet]
         public ActionResult List()
         {
             var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
-            if (loggedInUser == null) return RedirectToAction("Login", "Auth");
+            if (loggedInUser == null) return NotFound("Uzytkownik niezalogowany");
 
             var user = UserRepository.GetUserByLogin(loggedInUser);
             if (user == null) return NotFound("Zalogowany użytkownik nie istnieje.");
@@ -25,48 +33,70 @@ namespace MiniSocialMedia.Controllers
             return Json(user.Friends);
         }
 
-        // POST: FriendsController/Add/login
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpGet]
         public ActionResult Add(string login)
         {
-            try
-            {
-                _context.Users.Add(new User(login));
-                _context.SaveChanges();
+            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            if (loggedInUser == null) return NotFound("Uzytkownik niezalogowany");
 
-                return RedirectToAction(nameof(List)); // json
-            }
-            catch
+            var user = UserRepository.GetUserByLogin(loggedInUser);
+            var friend = UserRepository.GetUserByLogin(login);
+
+            if (user == null || friend == null || user.Friends.Contains(new User(login)))
             {
-                return RedirectToAction(nameof(List));
+                return Json(false);
             }
+
+            user.Friends.Add(new User(login));
+            return Json(true);
+        }
+        [HttpGet]
+        public IActionResult Del(string login)
+        {
+            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            if (loggedInUser == null) return NotFound("Uzytkownik niezalogowany");
+
+            var user = UserRepository.GetUserByLogin(loggedInUser);
+            if (user == null || !user.Friends.Contains(new User(login)))
+            {
+                return Json(false);
+            }
+
+            user.Friends.Remove(new User(login));
+            return Json(true);
+        }
+        [HttpGet]
+        public IActionResult Export()
+        {
+            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            if (loggedInUser == null) return NotFound("Uzytkownik niezalogowany");
+
+            var user = UserRepository.GetUserByLogin(loggedInUser);
+            if (user == null) return NotFound("Zalogowany użytkownik nie istnieje.");
+
+            var friendListJson = JsonSerializer.Serialize(user.Friends);
+            var fileName = $"{user.Login}_friends.txt";
+            var fileBytes = System.Text.Encoding.UTF8.GetBytes(friendListJson);
+
+            return File(fileBytes, "text/plain", fileName);
         }
 
-        // POST: FriendsController/Del/login
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(string login, IFormCollection collection)
+        public IActionResult Import(IFormFile file)
         {
-            try
-            {
-                return RedirectToAction(nameof(Index)); // json
-            }
-            catch
-            {
-                return View();
-            }
-        }
-        // GET: FriendsController/Export
-        public ActionResult Export()
-        {
-            return View();
-        }
+            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            if (loggedInUser == null) return NotFound("Uzytkownik niezalogowany");
 
-        // GET: FriendsController/Import
-        public ActionResult Import()
-        {
-            return View();
+            var user = UserRepository.GetUserByLogin(loggedInUser);
+            if (user == null) return NotFound("Zalogowany użytkownik nie istnieje.");
+
+            using (var reader = new StreamReader(file.OpenReadStream()))
+            {
+                var content = reader.ReadToEnd();
+                //user.Friends = JsonSerializer.Deserialize<List<string>>(content) ?? new List<string>();
+            }
+
+            return RedirectToAction("List");
         }
     }
 }
