@@ -20,3 +20,8 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.listTable{
+    margin-left: auto;
+    margin-right: auto;
+}
