@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using MiniSocialMedia.Data;
 using System.Reflection.Emit;
+using MiniSocialMedia.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,20 +21,26 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 );
 
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession(options => {
+builder.Services.AddSession(options =>
+{
     options.IdleTimeout = TimeSpan.FromMinutes(10);
     options.Cookie.HttpOnly = true;
 });
 
 builder.Services.Configure<CookiePolicyOptions>(
-    options => {
+    options =>
+    {
         options.CheckConsentNeeded = context => false;
         options.MinimumSameSitePolicy = SameSiteMode.None;
     });
 
+builder.Services.AddScoped<AdminAuthorizationFilter>();
+builder.Services.AddScoped<UserAuthorizationFilter>();
+builder.Services.AddScoped<UserActionFilter>();
+
 var app = builder.Build();
 
-app.UseStatusCodePagesWithReExecute("/Home/Error");
+app.UseStatusCodePagesWithReExecute("/Error/404");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -62,8 +69,7 @@ app.MapControllerRoute(
     name: "init",
     pattern: "Init",
     defaults: new { controller = "User", action = "Init" }
-    );
-
+);
 
 
 app.MapRazorPages();

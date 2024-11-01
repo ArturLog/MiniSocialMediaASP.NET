@@ -20,7 +20,7 @@ namespace MiniSocialMedia.Controllers
                 HttpContext.Session.SetString("LoggedInUser", login);
                 return RedirectToAction("Index", "Friends");
             }
-            return NotFound("Użytkownik nie istnieje.");
+            return NotFound("User not exist.");
         }
         [HttpGet]
         [Route("Logout")]

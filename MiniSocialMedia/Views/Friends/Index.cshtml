@@ -7,35 +7,40 @@
 <div class="text-center">
     <h1 class="display-4">Friends</h1>
     <table class="listTable">
-    <thead>
-    <tr>
-        <th>Uuid</th>
-        <th>Login</th>
-        <th>CreatedAt</th>
-        <th>Delete</th>
-    </tr>
-    </thead>
-    <tbody>
+        <thead>
+        <tr>
+            <th>Uuid</th>
+            <th>Login</th>
+            <th>CreatedAt</th>
+            <th>Delete</th>
+        </tr>
+        </thead>
+        <tbody>
         @foreach (var friend in Model.Friends)
         {
             <tr>
                 <td>@friend.Uuid</td>
                 <td>@friend.Login</td>
                 <td>@friend.CreatedAt</td>
-                <td><a asp-action="Del" asp-route-login="@friend">Usuń</a></td>
+                <td>
+                    <form asp-action="Del" asp-controller="Friends" method="post">
+                        <input type="hidden" name="login" value="@friend.Login"/>
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
             </tr>
         }
         </tbody>
     </table>
     <h3>Add friend</h3>
     <form method="get" asp-action="Add">
-        <input type="text" name="login" required placeholder="Friend's login" />
-        <button type="submit">Dodaj</button>
+        <input type="text" name="login" required placeholder="Friend's login"/>
+        <button type="submit">Add</button>
     </form>
 
     <h3>Import / Export</h3>
     <form method="post" asp-action="Import" enctype="multipart/form-data">
-        <input type="file" name="file" required />
+        <input type="file" name="file" required/>
         <button type="submit">Import</button>
     </form>
 

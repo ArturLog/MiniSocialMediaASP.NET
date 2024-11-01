@@ -2,11 +2,28 @@
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using MiniSocialMedia.Data;
 using MiniSocialMedia.Models;
 
 namespace MiniSocialMedia.Controllers
 {
+    public class AdminAuthorizationFilter : IAuthorizationFilter
+    {
+        public void OnAuthorization(AuthorizationFilterContext context)
+        {
+            var loggedInUser = context.HttpContext.Session.GetString("LoggedInUser");
+            if (loggedInUser != "admin")
+            {
+                context.Result = new ContentResult
+                {
+                    Content = "Access prohibited. Only the admin has access to this action.",
+                    StatusCode = StatusCodes.Status403Forbidden
+                };
+            }
+        }
+    }
+    [ServiceFilter(typeof(AdminAuthorizationFilter))]
     public class UserController : Controller
     {
         [HttpGet]
@@ -24,7 +41,7 @@ namespace MiniSocialMedia.Controllers
         public IActionResult AddPost(string login)
         {
             if (UserRepository.AddUser(login)) return RedirectToAction(nameof(List));
-            ModelState.AddModelError("", "Login użytkownika jest wymagany i musi być unikalny.");
+            ModelState.AddModelError("", "User login is required and must be unique.");
             return RedirectToAction(nameof(Add));
         }
 
