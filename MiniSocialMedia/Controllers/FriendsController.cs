@@ -13,7 +13,7 @@ namespace MiniSocialMedia.Controllers
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var loggedInUser = context.HttpContext.Session.GetString("LoggedInUser");
+            context.HttpContext.Request.Cookies.TryGetValue("LoggedInUser", out var loggedInUser);
             if (loggedInUser == null)
             {
                 context.Result = new ContentResult
@@ -29,7 +29,7 @@ namespace MiniSocialMedia.Controllers
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            var loggedInUser = context.HttpContext.Session.GetString("LoggedInUser");
+            context.HttpContext.Request.Cookies.TryGetValue("LoggedInUser", out var loggedInUser);
             var user = UserRepository.GetUserByLogin(loggedInUser);
             if (user == null)
             {
@@ -49,7 +49,7 @@ namespace MiniSocialMedia.Controllers
         [HttpGet]
         public ActionResult Index()
         {
-            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            var loggedInUser = GetLoggedInUser();
             var user = UserRepository.GetUserByLogin(loggedInUser);
 
             return View(user);
@@ -58,7 +58,7 @@ namespace MiniSocialMedia.Controllers
         [HttpGet]
         public ActionResult List()
         {
-            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            var loggedInUser = GetLoggedInUser();
             var user = UserRepository.GetUserByLogin(loggedInUser);
 
             return Json(user.Friends);
@@ -67,7 +67,7 @@ namespace MiniSocialMedia.Controllers
         [HttpGet]
         public ActionResult Add(string login)
         {
-            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            var loggedInUser = GetLoggedInUser();
             var user = UserRepository.GetUserByLogin(loggedInUser);
             var friend = UserRepository.GetUserByLogin(login);
 
@@ -84,7 +84,7 @@ namespace MiniSocialMedia.Controllers
         [HttpGet]
         public IActionResult Del(string login)
         {
-            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            var loggedInUser = GetLoggedInUser();
             var user = UserRepository.GetUserByLogin(loggedInUser);
             if (user == null || !user.Friends.Any(friend => friend.Login == login))
             {
@@ -98,7 +98,7 @@ namespace MiniSocialMedia.Controllers
         [HttpGet]
         public IActionResult Export()
         {
-            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            var loggedInUser = GetLoggedInUser();
             var user = UserRepository.GetUserByLogin(loggedInUser);
 
             var friendListJson = JsonSerializer.Serialize(user.Friends);
@@ -111,7 +111,7 @@ namespace MiniSocialMedia.Controllers
         [HttpPost]
         public IActionResult Import(IFormFile file)
         {
-            var loggedInUser = HttpContext.Session.GetString("LoggedInUser");
+            var loggedInUser = GetLoggedInUser();
             var user = UserRepository.GetUserByLogin(loggedInUser);
 
             using (var reader = new StreamReader(file.OpenReadStream()))
@@ -129,6 +129,13 @@ namespace MiniSocialMedia.Controllers
             }
 
             return RedirectToAction("List");
+        }
+
+        [NonAction]
+        public string GetLoggedInUser()
+        {
+            HttpContext.Request.Cookies.TryGetValue("LoggedInUser", out var loggedInUser);
+            return loggedInUser;
         }
     }
 }

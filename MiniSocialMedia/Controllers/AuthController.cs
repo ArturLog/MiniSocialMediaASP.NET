@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using MiniSocialMedia.Models;
 
 namespace MiniSocialMedia.Controllers
@@ -11,13 +12,13 @@ namespace MiniSocialMedia.Controllers
         {
             if (login == "admin")
             {
-                HttpContext.Session.SetString("LoggedInUser", login);
+                HttpContext.Response.Cookies.Append("LoggedInUser", login);
                 return RedirectToAction("List", "User");
             }
             var user = UserRepository.GetUserByLogin(login);
             if (user != null)
             {
-                HttpContext.Session.SetString("LoggedInUser", login);
+                HttpContext.Response.Cookies.Append("LoggedInUser", login);
                 return RedirectToAction("Index", "Friends");
             }
             return NotFound("User not exist.");
@@ -26,7 +27,7 @@ namespace MiniSocialMedia.Controllers
         [Route("Logout")]
         public IActionResult Logout()
         {
-            HttpContext.Session.Remove("LoggedInUser");
+            HttpContext.Response.Cookies.Delete("LoggedInUser");
             return RedirectToAction("Index", "Home");
         }
     }

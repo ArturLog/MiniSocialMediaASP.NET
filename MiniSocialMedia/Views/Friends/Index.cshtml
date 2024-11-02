@@ -1,18 +1,22 @@
-﻿@{
-    ViewData["Title"] = "Friends";
+﻿@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = @Localizer["Friends"];
 }
 
 @model User
 
 <div class="text-center">
-    <h1 class="display-4">Friends</h1>
+    <h1 class="display-4">@Localizer["Friends"]</h1>
     <table class="listTable">
         <thead>
         <tr>
             <th>Uuid</th>
-            <th>Login</th>
-            <th>CreatedAt</th>
-            <th>Delete</th>
+            <th>@Localizer["Login"]</th>
+            <th>@Localizer["CreatedAt"]</th>
+            <th>@Localizer["Delete"]</th>
         </tr>
         </thead>
         <tbody>
@@ -32,17 +36,17 @@
         }
         </tbody>
     </table>
-    <h3>Add friend</h3>
+    <h3>@Localizer["AddFriend"]</h3>
     <form method="get" asp-action="Add">
-        <input type="text" name="login" required placeholder="Friend's login"/>
+        <input type="text" name="login" required placeholder=@Localizer["FriendsLogin"]/>
         <button type="submit">Add</button>
     </form>
 
-    <h3>Import / Export</h3>
+    <h3>@Localizer["ImportExport"]</h3>
     <form method="post" asp-action="Import" enctype="multipart/form-data">
         <input type="file" name="file" required/>
-        <button type="submit">Import</button>
+        <button type="submit">@Localizer["Import"]</button>
     </form>
 
-    <a asp-action="Export">Export</a>
+    <a asp-action="Export">@Localizer["Export"]</a>
 </div>

@@ -12,7 +12,7 @@ namespace MiniSocialMedia.Controllers
     {
         public void OnAuthorization(AuthorizationFilterContext context)
         {
-            var loggedInUser = context.HttpContext.Session.GetString("LoggedInUser");
+            context.HttpContext.Request.Cookies.TryGetValue("LoggedInUser", out var loggedInUser);
             if (loggedInUser != "admin")
             {
                 context.Result = new ContentResult
